@@ -4,16 +4,9 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var webpack = require('webpack');
-var webpackDevMiddleware = require('webpack-dev-middleware');
-
-import * as webpackconfig from "./webpack.dev.config.js";
 
 const app = express();
 const isDevelopment  = app.get('env') !== "production";
-
-const DIST_DIR = path.join(__dirname, "dist");
-const compiler = webpack(webpackconfig);
 
 const DEFAULT_PORT = 3000;
 app.set("port", process.env.PORT || DEFAULT_PORT);
