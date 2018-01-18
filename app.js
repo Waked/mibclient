@@ -1,14 +1,22 @@
-var express = require('express');
 var path = require('path');
+var express = require('express');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var webpack = require('webpack');
+var webpackDevMiddleware = require('webpack-dev-middleware');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
+import * as webpackconfig from "./webpack.dev.config.js";
 
-var app = express();
+const app = express();
+const isDevelopment  = app.get('env') !== "production";
+
+const DIST_DIR = path.join(__dirname, "dist");
+const compiler = webpack(webpackconfig);
+
+const DEFAULT_PORT = 3000;
+app.set("port", process.env.PORT || DEFAULT_PORT);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,6 +30,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+var index = require('./routes/index');
+var users = require('./routes/users');
 app.use('/', index);
 app.use('/users', users);
 

@@ -7,12 +7,15 @@
   },
   "dependencies": {
     "body-parser": "~1.18.2",
+    "bootstrap": "^3.3.7",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.15.5",
     "hjs": "~0.0.6",
     "morgan": "~1.9.0",
-    "net-snmp": "^1.2.0",
-    "serve-favicon": "~2.4.5"
+    "serve-favicon": "~2.4.5",
+    "snmp-native": "^1.1.1",
+    "webpack": "^3.10.0",
+    "webpack-dev-middleware": "^2.0.4"
   }
 }
