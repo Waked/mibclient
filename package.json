@@ -6,28 +6,13 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "autoprefixer": "^7.2.5",
     "body-parser": "~1.18.2",
-    "bootstrap": "^3.3.7",
-    "bootstrap-treeview": "^1.2.0",
-    "bower": "^1.8.2",
     "cookie-parser": "~1.4.3",
-    "css-loader": "^0.28.9",
     "debug": "~2.6.9",
     "express": "~4.15.5",
-    "file-loader": "^1.1.6",
-    "font-loader": "^0.1.2",
     "hjs": "~0.0.6",
-    "jquery": "^3.2.1",
     "morgan": "~1.9.0",
-    "popper.js": "^1.12.9",
-    "postcss-loader": "^2.0.10",
-    "sass-loader": "^6.0.6",
     "serve-favicon": "~2.4.5",
-    "snmp-native": "^1.1.1",
-    "style-loader": "^0.19.1",
-    "url-loader": "^0.6.2",
-    "webpack": "^3.10.0",
-    "webpack-dev-middleware": "^2.0.4"
+    "snmp-native": "^1.1.1"
   }
 }
