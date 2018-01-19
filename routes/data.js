@@ -13,20 +13,21 @@ var snmpoptions = {
   timeouts: [5000]
 };
 
-var oid = 'mib-2';
 var suboidsproto = ['system', 'interfaces', 'at', 'ip', 'icmp', 'tcp', /*'udp',*/ 'egp', 'snmp'];
 
 router.get('/', function(req, res, next) {
-  var suboids = suboidsproto.slice();
 
   var data = {
     dataSource: [
       {
-        text: oid,
-        children: []
+        text: 'mib-2',
+        children: [],
+        OID: '1.3.6.1.2.1'
       }
     ]
   };
+
+  var suboids = suboidsproto.slice(); // Clone array
 
   var _oid = suboids.shift();
 
@@ -40,7 +41,7 @@ router.get('/', function(req, res, next) {
     session.getSubtree(snmpoptions, function(error, varbinds, baseOid) {
       session.close();
   		mib.DecodeVarBinds(varbinds, function (VarBinds) {
-  			//console.log(VarBinds);
+  			console.log(VarBinds);
         data.dataSource[0].children.push(varbinds2goodjson(VarBinds, _oid));
         if (suboids.length > 0) {
           _oid = suboids.shift();
@@ -57,7 +58,7 @@ router.get('/', function(req, res, next) {
 // for front-end library bootstrap-treeview.
 var varbinds2goodjson = function(varbinds, topoid) {
 	// Output object - root element has the name of subtree root (oid)
-	var outputJson = NewHierarchyLevel(topoid);
+	var outputJson = NewHierarchyLevel(topoid, varbinds[0].OID.slice('1.3.6.1.2.1.'.length)[0]);
 
 	//console.log(varbinds);
 
@@ -73,14 +74,14 @@ var varbinds2goodjson = function(varbinds, topoid) {
 			currentidx = Number.parseInt(indices.shift());
 			// If there is no child node of the given index, push new
 			if (currentlevel.children[currentidx - 1] == undefined) {
-				currentlevel.children.push(NewHierarchyLevel(currentoid));
+				currentlevel.children.push(NewHierarchyLevel(currentoid, '.' + indices.join('.')));
 			}
 			// Move further in the hierarchy
 			currentlevel = currentlevel.children[currentidx - 1];
 		}
     if (currentlevel != undefined) {
-      if (currentlevel.OID == undefined) {
-        currentlevel.OID = varbind.OID;
+      if (currentlevel.oid == undefined) {
+        //currentlevel.OID = varbind.OID;
         currentlevel.oid = varbind.oid;
         currentlevel.type = varbind.TYPE
       }
@@ -99,10 +100,11 @@ var varbinds2goodjson = function(varbinds, topoid) {
 	return outputJson;
 };
 
-var NewHierarchyLevel = function(name) {
+var NewHierarchyLevel = function(name, OID) {
 	return {
 		text: name,
-		children: []
+		children: [],
+    OID: '1.3.6.1.2.1.' + OID
 	};
 }
 

@@ -27,8 +27,8 @@
         <div class="col-lg-12">
           <h4>Zapytania</h4>
           <p>
-            <button type="button" class="btn btn-primary" id="btnGetRequest" onclick="">Get</button>
-            <button type="button" class="btn btn-secondary" id="btnGetNextRequest" type="btn btn-secondary" onclick="">Get Nexts</button>
+            <button type="button" class="btn btn-outline-primary" id="btnGetRequest" onclick="">Get</button>
+            <button type="button" class="btn btn-outline-secondary" id="btnGetNextRequest" type="btn btn-secondary" onclick="">Get Nexts</button>
           </p>
         </div>
       </div>
