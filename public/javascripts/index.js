@@ -11,7 +11,7 @@ window.onload = function () {
     var selections = tree.getSelections();
     var nodeData = tree.getDataById(selections[0]);
 
-    var fullOID = nodeData.OID + '.' + nodeData.oid;
+    var fullOID = nodeData.OID + '.0';
 
     $.ajax('/get', {
       method: 'POST',
@@ -21,8 +21,6 @@ window.onload = function () {
         console.log(data);
         $('#responseField').text(nodeData.text + ": " + data); // Insert results in result field
     });
-
-    console.log(nodeData);
   });
 
   $('#btnGetNextRequest').on('click', function () {
@@ -41,5 +39,11 @@ window.onload = function () {
     });
 
     console.log(nodeData);
+  });
+
+  $('#btnCheckOid').on('click', function() {
+    var selections = tree.getSelections();
+    var nodeData = tree.getDataById(selections[0]);
+    $('#responseField').text(nodeData.text + " OID is " + nodeData.OID);
   });
 }

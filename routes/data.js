@@ -13,7 +13,7 @@ var snmpoptions = {
   timeouts: [5000]
 };
 
-var suboidsproto = ['system', 'interfaces', 'at', 'ip', 'icmp', 'tcp', /*'udp',*/ 'egp', 'snmp'];
+var mibs = ['system', 'interfaces', 'at', 'ip', 'icmp', 'tcp', /*'udp',*/ 'egp', 'snmp'];
 
 router.get('/', function(req, res, next) {
 
@@ -21,31 +21,27 @@ router.get('/', function(req, res, next) {
     dataSource: [
       {
         text: 'mib-2',
-        children: [],
-        OID: '1.3.6.1.2.1'
+        OID: '1.3.6.1.2.1',
+        children: []
       }
     ]
   };
 
-  var suboids = suboidsproto.slice(); // Clone array
+  var categories = mibs.slice(); // Clone array
 
-  var _oid = suboids.shift();
+  var cat_obj = categories.shift();
 
-  mib.GetObject(_oid, function getCallback(Object) {
-  	//console.log(Object);
-    var snmpoptions = {
-      oid: '.' + Object.OID,
-    };
+  mib.GetObject(cat_obj, function getCallback(Object) {
+    //console.log(Object);
     var session = new snmp.Session(snmpoptions);
-
-    session.getSubtree(snmpoptions, function(error, varbinds, baseOid) {
+    var getparameters = { oid: '.' + Object.OID }; // Need trailing dot
+    session.getSubtree(getparameters, function(error, varbinds, baseOid) {
       session.close();
   		mib.DecodeVarBinds(varbinds, function (VarBinds) {
-  			console.log(VarBinds);
-        data.dataSource[0].children.push(varbinds2goodjson(VarBinds, _oid));
-        if (suboids.length > 0) {
-          _oid = suboids.shift();
-          mib.GetObject(_oid, getCallback);
+        data.dataSource[0].children.push(categoryFromVarBinds(cat_obj, VarBinds, Object.OID));
+        if (categories.length > 0) {
+          cat_obj = categories.shift();
+          mib.GetObject(cat_obj, getCallback);
         } else {
           res.send(data);
         }
@@ -54,58 +50,48 @@ router.get('/', function(req, res, next) {
   });
 });
 
-// Function to convert decoded VarBinds into a format readable
-// for front-end library bootstrap-treeview.
-var varbinds2goodjson = function(varbinds, topoid) {
-	// Output object - root element has the name of subtree root (oid)
-	var outputJson = NewHierarchyLevel(topoid, varbinds[0].OID.slice('1.3.6.1.2.1.'.length)[0]);
+var categoryFromVarBinds = function(name, VarBinds, cat_oid) {
+  var element = {
+    text: name,
+    OID: cat_oid,
+    children: []
+  }
+  VarBinds.forEach(function(VarBind) {
+    var namespace = VarBind.NameSpace;
+    var oid = VarBind.OID;
+    var index = VarBind.oid;
 
-	//console.log(varbinds);
+    var split_namespace = namespace.split('.');
+    var split_oid = oid.split('.');
 
-	varbinds.forEach(function(varbind) {
-    console.log(varbind);
-		var hierarchy = varbind.NameSpace.split('.');
-		var indices = varbind.OID.split('.');
-		while (hierarchy.shift() != topoid) { indices.shift() } // Remove trailing oids and indices
-		indices.shift();
-		var currentlevel = outputJson;
-		while (hierarchy.length > 0) {
-			currentoid = hierarchy.shift();
-			currentidx = Number.parseInt(indices.shift());
-			// If there is no child node of the given index, push new
-			if (currentlevel.children[currentidx - 1] == undefined) {
-				currentlevel.children.push(NewHierarchyLevel(currentoid, '.' + indices.join('.')));
-			}
-			// Move further in the hierarchy
-			currentlevel = currentlevel.children[currentidx - 1];
-		}
-    if (currentlevel != undefined) {
-      if (currentlevel.oid == undefined) {
-        //currentlevel.OID = varbind.OID;
-        currentlevel.oid = varbind.oid;
-        currentlevel.type = varbind.TYPE
-      }
-      else {
-        if (!Array.isArray(currentlevel.oid)) {
-          currentlevel.oid = [ currentlevel.oid ];
-        }
-        else {
-          currentlevel.oid.push(varbind.oid);
-        }
-      }
+    var current_element = split_namespace.shift(); // Element by element
+    var current_index = split_oid.shift();
+
+    while (current_element != element.text) {
+      current_element = split_namespace.shift(); // Element by element
+      current_index = split_oid.shift();
     }
-    //console.log(currentlevel);
-	});
+    // Mamy tera hierarchię
+    var previous_element = element;
 
-	return outputJson;
-};
+    while (split_namespace.length > 0) {
+      current_element = split_namespace.shift(); // Element by element
+      current_index = split_oid.shift();
 
-var NewHierarchyLevel = function(name, OID) {
-	return {
-		text: name,
-		children: [],
-    OID: '1.3.6.1.2.1.' + OID
-	};
+      var existing_element = previous_element.children.find(el => el.text == current_element);
+
+      if (existing_element == null || existing_element == undefined) {
+        existing_element = {
+          text: current_element,
+          OID: previous_element.OID + '.' + current_index,
+          children: []
+        };
+        previous_element.children.push(existing_element);
+      }
+      previous_element = existing_element;
+    }
+  });
+  return element;
 }
 
 module.exports = router;

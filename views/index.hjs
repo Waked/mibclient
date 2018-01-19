@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel='stylesheet' href='/stylesheets/bootstrap.css' />
     <link rel='stylesheet' href='/stylesheets/bootstrap-treeview.css' />
     <link rel='stylesheet' href='/stylesheets/gijgo.css' />
@@ -29,6 +30,7 @@
           <p>
             <button type="button" class="btn btn-outline-primary" id="btnGetRequest" onclick="">Get</button>
             <button type="button" class="btn btn-outline-secondary" id="btnGetNextRequest" type="btn btn-secondary" onclick="">Get Nexts</button>
+            <button type="button" class="btn btn-outline-secondary" id="btnCheckOid" type="btn btn-secondary" onclick="">Check OID</button>
           </p>
         </div>
       </div>
