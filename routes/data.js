@@ -4,6 +4,7 @@ var MIB = require('../lib/mib');
 var mib = new MIB();
 mib.LoadMIBs();
 var snmp = require('snmp-native');
+var netsnmp = require('net-snmp');
 var util = require('util');
 
 var snmpoptions = {
@@ -13,9 +14,11 @@ var snmpoptions = {
 };
 
 var oid = 'mib-2';
-var suboids = ['system', 'interfaces', /*'at'*/];
+var suboidsproto = ['system', 'interfaces', 'at', 'ip', 'icmp', 'tcp', /*'udp',*/ 'egp', 'snmp'];
 
 router.get('/', function(req, res, next) {
+  var suboids = suboidsproto.slice();
+
   var data = {
     dataSource: [
       {
@@ -54,28 +57,43 @@ router.get('/', function(req, res, next) {
 // for front-end library bootstrap-treeview.
 var varbinds2goodjson = function(varbinds, topoid) {
 	// Output object - root element has the name of subtree root (oid)
-	var outputJson = NewHierarchyLevel(oid);
+	var outputJson = NewHierarchyLevel(topoid);
 
 	//console.log(varbinds);
 
 	varbinds.forEach(function(varbind) {
+    console.log(varbind);
 		var hierarchy = varbind.NameSpace.split('.');
 		var indices = varbind.OID.split('.');
-		while (hierarchy.shift() != oid) { indices.shift() } // Remove trailing oids and indices
+		while (hierarchy.shift() != topoid) { indices.shift() } // Remove trailing oids and indices
 		indices.shift();
 		var currentlevel = outputJson;
 		while (hierarchy.length > 0) {
 			currentoid = hierarchy.shift();
 			currentidx = Number.parseInt(indices.shift());
 			// If there is no child node of the given index, push new
-      console.log(currentlevel);
-			if (!currentlevel.children[currentidx - 1]) {
-        console.log("Pushing " + currentoid);
+			if (currentlevel.children[currentidx - 1] == undefined) {
 				currentlevel.children.push(NewHierarchyLevel(currentoid));
 			}
 			// Move further in the hierarchy
 			currentlevel = currentlevel.children[currentidx - 1];
 		}
+    if (currentlevel != undefined) {
+      if (currentlevel.OID == undefined) {
+        currentlevel.OID = varbind.OID;
+        currentlevel.oid = varbind.oid;
+        currentlevel.type = varbind.TYPE
+      }
+      else {
+        if (!Array.isArray(currentlevel.oid)) {
+          currentlevel.oid = [ currentlevel.oid ];
+        }
+        else {
+          currentlevel.oid.push(varbind.oid);
+        }
+      }
+    }
+    //console.log(currentlevel);
 	});
 
 	return outputJson;
