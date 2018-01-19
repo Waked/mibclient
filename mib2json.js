@@ -8,10 +8,10 @@ mib.WriteToFile('mib.JSON');
 /*  ___snmp-native varbind parsing____*/
 var snmp = require('snmp-native');
 var session = new snmp.Session();
-var oid = 'mib-2'
+var oid = 'interfaces'
 
 mib.GetObject(oid, function (Object) {
-	console.log(Object);
+	//console.log(Object);
 	var options = {
 		host: '127.0.0.1',
 		community: 'public',
@@ -19,9 +19,10 @@ mib.GetObject(oid, function (Object) {
 		timeouts: [5000]
 	};
 	session.getSubtree(options, function (error, varbinds, baseOid) {
-		console.log(varbinds);
+		//console.log(varbinds);
 		var NameSpaceTable = {};
 		mib.DecodeVarBinds(varbinds, function (VarBinds) {
+			//console.log(VarBinds);
 			var NameSpace = {};
 			VarBinds.forEach(function (vb) {
 				if (!NameSpace[vb.NameSpace]) {
@@ -32,7 +33,7 @@ mib.GetObject(oid, function (Object) {
 			// console.log(NameSpace);
 			NameSpaceTable = delimiter2bracket(NameSpace, '.');
 			var mib2 = NameSpaceTable.iso.org.dod.internet.mgmt;
-			// console.log(JSON.stringify(mib2, null, 4));
+			console.log(JSON.stringify(mib2, null, 4));
 		});
 	});
 });
